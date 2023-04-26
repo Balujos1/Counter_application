@@ -1,78 +1,93 @@
 pipeline{
-
+    
     agent any 
-
-    stages{
-
+    
+    stages {
+        
         stage('Git Checkout'){
-           
+            
             steps{
-
+                
                 script{
-                 
-                 git branch: 'main', url: 'https://github.com/vikash-kumar01/Counter_application.git'
-
+                    
+                    git branch: 'main', url: 'https://github.com/vikash-kumar01/mrdevops_javaapplication.git'
                 }
             }
         }
-        stage('Unit Test'){
-
-             steps{
-
-              script{
-                   
-                   sh 'mvn test'
-
+        stage('UNIT testing'){
+            
+            steps{
+                
+                script{
+                    
+                    sh 'mvn test'
                 }
-             }
+            }
         }
-        stage('Integration Test'){
-
-             steps{
-
-              script{
-                   
-                   sh 'mvn verify -DskipUnitTests'
-
+        stage('Integration testing'){
+            
+            steps{
+                
+                script{
+                    
+                    sh 'mvn verify -DskipUnitTests'
                 }
-             }
+            }
         }
-        stage('Static Code Analysis'){
-
-             steps{
-
-              script{
-                   
-                  withSonarQubeEnv(credentialsId: 'sonar-api') {
-                     
-                     sh 'mvn clean package sonar:sonar'
-                  }
+        stage('Maven build'){
+            
+            steps{
+                
+                script{
+                    
+                    sh 'mvn clean install'
                 }
-             }
+            }
         }
-        stage('Quality Gate status Check'){
-
-             steps{
-
-              script{
-                   
-                   waitForQualityGate abortPipeline: false, credentialsId: 'sonar-api'
-
+        stage('Static code analysis'){   //SonarQube Scanner for Jenkins
+            
+            steps{
+                
+                script{
+                    
+                    withSonarQubeEnv(credentialsId: 'sonar-api') {
+                        
+                        sh 'mvn clean package sonar:sonar'
+                    }
+                   }
+                    
                 }
-             }
-        }
-        stage('Maven Build'){
-
-             steps{
-
-              script{
-                   
-                   sh 'mvn clean install'
-
+            }
+            stage('Quality Gate Status'){   //Sonar Quality Gate Plugin
+                
+                steps{
+                    
+                    script{
+                        
+                        waitForQualityGate abortPipeline: false, credentialsId: 'sonar-api'
+                    }
                 }
-             }
-        }
-        stage('Docker image Building'){
+            }
+            stage('Upload war file to Nexus'){    //Nexus Artifact Uploader
+                
+                steps{
+                    
+                    script{
+                        
+                        nexusArtifactUploader artifacts;
+                        artifactsID:
+                        credentials:
+                        groupId:
+                        nexuesUrl:
+                        protocol:
+                        repository:
+                        version:
+
+
+                    }
+                }
+            }
+         stage('Docker image Building'){
 
              steps{
 
@@ -98,8 +113,8 @@ pipeline{
                   }
                 }
              }
-        }        
-    }
+        }    
+        }
+        
 }
-
-// squ_531616e45ae941db981c0e09f5721d0ca515e4d4
+// squ_531616e45ae941db981c0e09f5721d0ca515e4d4  - SonarQube Token ID  (Webhook)
